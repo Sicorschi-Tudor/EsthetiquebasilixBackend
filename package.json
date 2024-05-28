@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "build": "babel index.js-d dist"
+    "build": "babel index.js -d dist"
   },
   "keywords": [],
   "author": "",
