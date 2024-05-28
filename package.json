@@ -2,10 +2,11 @@
   "name": "esthetiquebasilixbackend",
   "version": "1.0.0",
   "description": "",
-  "main": "inde.js",
+  "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node dist/index.js",
+    "build": "npm run clean && npx tsc"
   },
   "keywords": [],
   "author": "",
