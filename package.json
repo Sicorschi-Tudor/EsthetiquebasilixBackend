@@ -15,5 +15,9 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.24.6",
+    "@babel/core": "^7.24.6"
   }
 }
