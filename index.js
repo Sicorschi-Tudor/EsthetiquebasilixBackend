@@ -33,7 +33,10 @@ app.post("/api/reservation", async (req, res) => {
   reservation.push(newReservation)
 
   try {
-    await fs.writeFile("./reservation.json", JSON.stringify(reservation))
+    await fs.promises.writeFile(
+      "./reservation.json",
+      JSON.stringify(reservation)
+    )
     res.status(201).json(newReservation)
   } catch (err) {
     console.error("Error saving reservation data:", err)
