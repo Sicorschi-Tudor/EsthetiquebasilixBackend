@@ -29,11 +29,7 @@ app.post("/api/reservation", (req, res) => {
 
   // Write reservation data to file
   try {
-    fs.writeFileSync("./reservation.json", JSON.stringify(reservation))
-    res.status(201).json(newReservation)
-    console.log(
-      fs.writeFileSync("./reservation.json", JSON.stringify(reservation))
-    )
+    res.status(201).json(fs.writeFileSync("./reservation.json", JSON.stringify(reservation)))
   } catch (err) {
     console.error("Error saving reservation data:", err)
     res.status(500).send("Error saving reservation data")
