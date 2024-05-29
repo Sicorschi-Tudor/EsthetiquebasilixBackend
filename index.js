@@ -27,13 +27,18 @@ app.post("/api/reservation", (req, res) => {
   const newReservation = { id: uuidv4(), ...req.body }
   reservation.push(newReservation)
 
-  // Write reservation data to file
-  try {
-    res.status(201).json(fs.writeFileSync("./reservation.json", JSON.stringify(reservation)))
-  } catch (err) {
-    console.error("Error saving reservation data:", err)
-    res.status(500).send("Error saving reservation data")
-  }
+  fs.writeFileSync(
+    "./reservation.json",
+    JSON.stringify(reservation),
+    "utf-8",
+    function (err) {
+      if (err) {
+        res.send(err)
+      } else {
+        res.send("Successs")
+      }
+    }
+  )
 })
 
 const port = 5000
