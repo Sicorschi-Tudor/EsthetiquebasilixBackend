@@ -27,15 +27,16 @@ app.post("/api/reservation", (req, res) => {
   const newReservation = { id: uuidv4(), ...req.body }
   reservation.push(newReservation)
 
-  fs.writeFileSync(
+  fs.writeFile(
     "./reservation.json",
     JSON.stringify(reservation),
     "utf-8",
-    function (err) {
-      if (err) {
-        res.send(err)
-      } else {
-        res.send("Successs")
+    err => {
+      if (err) console.log(err)
+      else {
+        console.log("File written successfully\n")
+        console.log("The written has the following contents:")
+        console.log(fs.readFileSync("./reservation.json", "utf8"))
       }
     }
   )
