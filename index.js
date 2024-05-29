@@ -10,17 +10,12 @@ app.use(express.json())
 let reservation = []
 
 // Read reservation data from file
-fs.readFile("./reservation.json", "utf8", (err, data) => {
-  if (err) {
-    console.error("Error reading reservation data:", err)
-  } else {
-    try {
-      reservation = JSON.parse(data)
-    } catch (parseErr) {
-      console.error("Error parsing reservation data:", parseErr)
-    }
-  }
-})
+try {
+  const data = fs.readFileSync("./reservation.json", "utf8")
+  reservation = JSON.parse(data)
+} catch (err) {
+  console.error("Error reading reservation data:", err)
+}
 
 // Endpoint to get all reservations
 app.get("/api/reservation", (req, res) => {
@@ -33,22 +28,19 @@ app.post("/api/reservation", (req, res) => {
   reservation.push(newReservation)
 
   // Write reservation data to file
-  fs.writeFile("./reservation.json", JSON.stringify(reservation), err => {
-    if (err) {
-      console.error("Error saving reservation data:", err)
-      res.status(500).send("Error saving reservation data")
-    } else {
-      res.status(201).json(newReservation)
-      console.log("File written successfully\n")
-    }
-  })
+  try {
+    fs.writeFileSync("./reservation.json", JSON.stringify(reservation))
+    res.status(201).json(newReservation)
+  } catch (err) {
+    console.error("Error saving reservation data:", err)
+    res.status(500).send("Error saving reservation data")
+  }
 })
 
 const port = 5000
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`)
 })
-
 // app.post("/api/send-email", async (req, res) => {
 //   const { name, surname, tel, service, email, data, time } = req.body
 
