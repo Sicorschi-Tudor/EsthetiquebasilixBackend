@@ -17,6 +17,10 @@ try {
   console.error("Error reading reservation data:", err)
 }
 
+app.get("/", (req, res) => {
+  const dataa = fs.readFileSync("./reservation.json", "utf8")
+  res.json(JSON.parse(dataa))
+})
 // Endpoint to get all reservations
 app.get("/api/reservation", (req, res) => {
   res.json(reservation)
@@ -27,57 +31,17 @@ app.post("/api/reservation", (req, res) => {
   const newReservation = { id: uuidv4(), ...req.body }
   reservation.push(newReservation)
 
-  fs.writeFile(
-    "./reservation.json",
-    JSON.stringify(reservation),
-    "utf-8",
-    err => {
-      if (err) console.log(err)
-      else {
-        console.log("File written successfully\n")
-        console.log("The written has the following contents:")
-        console.log(fs.readFileSync("./reservation.json", "utf8"))
-      }
-    }
-  )
+  // Write reservation data to file
+  try {
+    fs.writeFileSync("./reservation.json", JSON.stringify(reservation))
+    res.status(201).json(newReservation)
+  } catch (err) {
+    console.error("Error saving reservation data:", err)
+    res.status(500).send("Error saving reservation data")
+  }
 })
 
 const port = 5000
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`)
 })
-// app.post("/api/send-email", async (req, res) => {
-//   const { name, surname, tel, service, email, data, time } = req.body
-
-//   try {
-//     // Create a transporter
-//     const transporter = nodemailer.createTransport({
-//       service: "gmail",
-//       auth: {
-//         user: "companybrizy@gmail.com",
-//         pass: "Xiaomitudor1.",
-//       },
-//     })
-
-//     // Send mail with defined transport object
-//     await transporter.sendMail({
-//       from: "companybrizy@gmail.com", // sender address
-//       to: "aaw1713tudor@gmail.com", // list of receivers
-//       subject: "New Contact Form Submission", // Subject line
-//       html: `
-//         <p>Name: ${name}</p>
-//         <p>Surname: ${surname}</p>
-//         <p>Telephone: ${tel}</p>
-//         <p>Email: ${email}</p>
-//         <p>Service: ${service}</p>
-//         <p>Date: ${data}</p>
-//         <p>Time: ${time}</p>
-//       `, // HTML body
-//     })
-
-//     res.status(200).send("Email sent successfully")
-//   } catch (error) {
-//     console.error("Error sending email:", error)
-//     res.status(500).send("Failed to send email")
-//   }
-// })
