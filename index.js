@@ -39,6 +39,7 @@ app.post("/api/reservation", (req, res) => {
       res.status(500).send("Error saving reservation data")
     } else {
       res.status(201).json(newReservation)
+      console.log("File written successfully\n")
     }
   })
 })
