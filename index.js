@@ -1,50 +1,53 @@
-import express from "express"
-import cors from "cors"
-import { v4 as uuidv4 } from "uuid"
-import fs from "fs/promises"
+var Express = require("express")
+var Mongoclient = require("mongodb").MongoClient
+var cors = require("cors")
+const multer = require("multer")
 
-const app = express()
+var app = Express()
 app.use(cors())
-app.use(express.json())
+app.use(Express.json())
 
-let reservation = []
+var CONNECTION_STRING =
+  "mongodb+srv://aaw1713tudor:Xiaomitudor1.@cluster0.wk7njla.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
-// Read reservation data from file
-const readReservations = async () => {
-  try {
-    const data = await fs.readFile("./reservation.json", "utf8")
-    reservation = JSON.parse(data)
-  } catch (err) {
-    console.error("Error reading reservation data:", err)
-  }
-}
+var DATABASENAME = "esthetiquebasilixdb"
+var database
 
-// Initial load of reservations
-readReservations()
-
-// Endpoint to get all reservations
-app.get("/api/reservation", (req, res) => {
-  res.json(reservation)
+app.listen(5000, () => {
+  Mongoclient.connect(CONNECTION_STRING, (error, client) => {
+    database = client.db(DATABASENAME)
+    console.log("Mongo db conection")
+  })
 })
 
-// Endpoint to add a new reservation
-app.post("/api/reservation", async (req, res) => {
-  const newReservation = { id: uuidv4(), ...req.body }
-  reservation.push(newReservation)
+app.get("/api/registrations", (request, response) => {
+  database
+    .collection("db")
+    .find({})
+    .toArray((error, result) => {
+      response.send(result)
+    })
+})
 
-  try {
-    await fs.promises.writeFile(
-      "./reservation.json",
-      JSON.stringify(reservation)
+app.post("/api/registrations/add", multer().none(), (request, response) => {
+  database.collection("db").countDocuments({}, (error, numOfDocs) => {
+    if (error) {
+      response.status(500).json({ error: "Database count error" })
+      return
+    }
+
+    database.collection("db").insertOne(
+      {
+        id: (numOfDocs + 1).toString(),
+        name: request.body.name,
+      },
+      (err, result) => {
+        if (err) {
+          response.status(500).json({ error: "Database insert error" })
+          return
+        }
+        response.json({ message: "Added Successfully" })
+      }
     )
-    res.status(201).json(newReservation)
-  } catch (err) {
-    console.error("Error saving reservation data:", err)
-    res.status(500).send("Error saving reservation data")
-  }
-})
-
-const port = 5000
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`)
+  })
 })
