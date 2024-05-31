@@ -1,20 +1,34 @@
-const TaskModel = require("../Models/TaskModels.js");
+const TaskModel = require("../Models/TaskModels")
 
-module.exports.getTasks = async (req, res) => {
-  const task = await TaskModel.find();
-  res.send(task);
-};
+const getTasks = async (req, res) => {
+  try {
+    const tasks = await TaskModel.find()
+    res.status(200).json(tasks)
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch tasks" })
+  }
+}
 
-module.exports.saveTasks = (req, res) => {
-  const { task } = req.body;
+const saveTask = async (req, res) => {
+  const { data, email, name, service, surname, tel, time } = req.body
 
-  TaskModel.create({ task })
-    .then((data) => {
-      console.log("Saved Succesfully");
-      res.status(201).send(data);
+  try {
+    const newTask = await TaskModel.create({
+      data,
+      email,
+      name,
+      service,
+      surname,
+      tel,
+      time,
     })
-    .catch((err) => {
-      console.log(err);
-      res.send({ err, msg: "something went wrong" });
-    });
-};
+    res.status(201).json(newTask)
+  } catch (error) {
+    res.status(500).json({ error: "Failed to save task" })
+  }
+}
+
+module.exports = {
+  getTasks,
+  saveTask,
+}
