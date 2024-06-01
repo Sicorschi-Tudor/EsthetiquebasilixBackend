@@ -1,10 +1,10 @@
-const express = require("express")
-const { getTasks, saveTask } = require("../controllers/TaskControllers")
+const express = require("express");
+const { getTasks, saveTask } = require("../controllers/TaskControllers");
 
-const router = express.Router()
+const router = express.Router();
 
-router.get("/", getTasks)
-router.get("/get", getTasks)
-router.get("/save", saveTask)
+router.get("/", getTasks);
+router.get("/get", getTasks);
+router.post("/save", saveTask);
 
-module.exports = router
+module.exports = router;
