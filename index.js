@@ -112,7 +112,7 @@ const startServer = async () => {
 
 startServer();
 
-app.get("/", (req, res) => {
+app.get("/sentemail", (req, res) => {
   Promise.all([sendEmail(req.query), replayEmail(req.query)])
     .then((responses) => {
       res.send(responses.map((response) => response.message));
