@@ -16,6 +16,37 @@ app.use((req, res, next) => {
   next();
 });
 
+function sendEmailPartner({ email }) {
+  return new Promise((resolve, reject) => {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "companybrizy@gmail.com",
+        pass: "oyuf uxfc ryyd yihy",
+      },
+    });
+
+    const mail_configs = {
+      from: "companybrizy@gmail.com",
+      to: "aaw1713tudor@gmail.com",
+      subject: "New Partener",
+      html: `
+            <p>${email}</p>
+      <p>Partener</p>
+      `,
+    };
+    transporter.sendMail(mail_configs, function (error, info) {
+      if (error) {
+        console.log("Error sending email:", error);
+        return reject({
+          message: "An error has occurred while sending the email",
+        });
+      }
+      return resolve({ message: "Email sent successfully" });
+    });
+  });
+}
+
 function sendEmail({ data, email, name, service, surname, tel, time }) {
   return new Promise((resolve, reject) => {
     const transporter = nodemailer.createTransport({
@@ -122,4 +153,14 @@ app.get("/sentemail", (req, res) => {
       res.status(500).send(error.message);
     });
 });
+
+app.get("/sentemailpartener", (req, res) => {
+  sendEmailPartner(req.query)
+    .then((response) => res.send(response.message))
+    .catch((error) => {
+      console.error("Error in GET /:", error);
+      res.status(500).send(error.message);
+    });
+});
+
 app.use("/tasks", routes); // Ensure the route is properly prefixed
