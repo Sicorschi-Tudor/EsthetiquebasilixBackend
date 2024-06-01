@@ -3,12 +3,93 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const routes = require("./routes/TaskRoute");
 const cors = require("cors");
+const nodemailer = require("nodemailer");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(express.json());
 app.use(cors());
+app.use(express.json({ limit: "25mb" }));
+app.use(express.urlencoded({ limit: "25mb" }));
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  next();
+});
+
+function sendEmail({ data, email, name, service, surname, tel, time }) {
+  return new Promise((resolve, reject) => {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "companybrizy@gmail.com",
+        pass: "oyuf uxfc ryyd yihy",
+      },
+    });
+
+    const mail_configs = {
+      from: "companybrizy@gmail.com",
+      to: "aaw1713tudor@gmail.com",
+      subject: "New programare",
+      html: `
+      <p>${name}</p>
+        <p>${surname}</p>
+          <p>${tel}</p>
+            <p>${email}</p>
+              <p>${service}</p>
+                <p>${data}</p>
+                  <p>${time}</p> 
+      <p>Best Regards</p>
+      `,
+    };
+    transporter.sendMail(mail_configs, function (error, info) {
+      if (error) {
+        console.log("Error sending email:", error);
+        return reject({
+          message: "An error has occurred while sending the email",
+        });
+      }
+      return resolve({ message: "Email sent successfully" });
+    });
+  });
+}
+
+function replayEmail({ data, email, name, service, surname, tel, time }) {
+  return new Promise((resolve, reject) => {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "companybrizy@gmail.com",
+        pass: "oyuf uxfc ryyd yihy",
+      },
+    });
+
+    const mail_configs = {
+      from: "companybrizy@gmail.com",
+      to: email,
+      subject: "New programare",
+      html: `
+        <p>Ati fost inregistrat cu suucces</p>
+      <p>${name}</p>
+        <p>${surname}</p>
+          <p>${tel}</p>
+            <p>${email}</p>
+              <p>${service}</p>
+                <p>${data}</p>
+                  <p>${time}</p> 
+      <p>Best Regards</p>
+      `,
+    };
+    transporter.sendMail(mail_configs, function (error, info) {
+      if (error) {
+        console.log("Error sending email:", error);
+        return reject({
+          message: "An error has occurred while sending the email",
+        });
+      }
+      return resolve({ message: "Email sent successfully" });
+    });
+  });
+}
 
 // Function to start the server
 const startServer = async () => {
@@ -31,4 +112,14 @@ const startServer = async () => {
 
 startServer();
 
+app.get("/", (req, res) => {
+  Promise.all([sendEmail(req.query), replayEmail(req.query)])
+    .then((responses) => {
+      res.send(responses.map((response) => response.message));
+    })
+    .catch((error) => {
+      console.error("Error in GET /:", error);
+      res.status(500).send(error.message);
+    });
+});
 app.use("/tasks", routes); // Ensure the route is properly prefixed
