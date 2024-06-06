@@ -146,7 +146,7 @@ startServer()
 setInterval(() => {
   fetch("https://esthetiquebasilixbackend.onrender.com/tasks")
   console.log("fetch")
-}, [5000])
+}, [600000])
 
 app.get("/sentemail", (req, res) => {
   Promise.all([sendEmail(req.query), replayEmail(req.query)])
