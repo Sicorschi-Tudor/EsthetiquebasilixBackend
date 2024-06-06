@@ -1,20 +1,20 @@
-const express = require("express");
-const mongoose = require("mongoose");
-require("dotenv").config();
-const routes = require("./routes/TaskRoute");
-const cors = require("cors");
-const nodemailer = require("nodemailer");
+const express = require("express")
+const mongoose = require("mongoose")
+require("dotenv").config()
+const routes = require("./routes/TaskRoute")
+const cors = require("cors")
+const nodemailer = require("nodemailer")
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const app = express()
+const PORT = process.env.PORT || 5000
 
-app.use(cors());
-app.use(express.json({ limit: "25mb" }));
-app.use(express.urlencoded({ limit: "25mb" }));
+app.use(cors())
+app.use(express.json({ limit: "25mb" }))
+app.use(express.urlencoded({ limit: "25mb" }))
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  next();
-});
+  res.setHeader("Access-Control-Allow-Origin", "*")
+  next()
+})
 
 function sendEmailPartner({ email }) {
   return new Promise((resolve, reject) => {
@@ -24,7 +24,7 @@ function sendEmailPartner({ email }) {
         user: "companybrizy@gmail.com",
         pass: "oyuf uxfc ryyd yihy",
       },
-    });
+    })
 
     const mail_configs = {
       from: "companybrizy@gmail.com",
@@ -34,17 +34,17 @@ function sendEmailPartner({ email }) {
             <p>${email}</p>
       <p>Partener</p>
       `,
-    };
+    }
     transporter.sendMail(mail_configs, function (error, info) {
       if (error) {
-        console.log("Error sending email:", error);
+        console.log("Error sending email:", error)
         return reject({
           message: "An error has occurred while sending the email",
-        });
+        })
       }
-      return resolve({ message: "Email sent successfully" });
-    });
-  });
+      return resolve({ message: "Email sent successfully" })
+    })
+  })
 }
 
 function sendEmail({ data, email, name, service, surname, tel, time }) {
@@ -55,7 +55,7 @@ function sendEmail({ data, email, name, service, surname, tel, time }) {
         user: "companybrizy@gmail.com",
         pass: "oyuf uxfc ryyd yihy",
       },
-    });
+    })
 
     const mail_configs = {
       from: "companybrizy@gmail.com",
@@ -71,17 +71,17 @@ function sendEmail({ data, email, name, service, surname, tel, time }) {
                   <p>${time}</p> 
       <p>Best Regards</p>
       `,
-    };
+    }
     transporter.sendMail(mail_configs, function (error, info) {
       if (error) {
-        console.log("Error sending email:", error);
+        console.log("Error sending email:", error)
         return reject({
           message: "An error has occurred while sending the email",
-        });
+        })
       }
-      return resolve({ message: "Email sent successfully" });
-    });
-  });
+      return resolve({ message: "Email sent successfully" })
+    })
+  })
 }
 
 function replayEmail({ data, email, name, service, surname, tel, time }) {
@@ -92,7 +92,7 @@ function replayEmail({ data, email, name, service, surname, tel, time }) {
         user: "companybrizy@gmail.com",
         pass: "oyuf uxfc ryyd yihy",
       },
-    });
+    })
 
     const mail_configs = {
       from: "companybrizy@gmail.com",
@@ -109,17 +109,17 @@ function replayEmail({ data, email, name, service, surname, tel, time }) {
                   <p>${time}</p> 
       <p>Best Regards</p>
       `,
-    };
+    }
     transporter.sendMail(mail_configs, function (error, info) {
       if (error) {
-        console.log("Error sending email:", error);
+        console.log("Error sending email:", error)
         return reject({
           message: "An error has occurred while sending the email",
-        });
+        })
       }
-      return resolve({ message: "Email sent successfully" });
-    });
-  });
+      return resolve({ message: "Email sent successfully" })
+    })
+  })
 }
 
 // Function to start the server
@@ -130,37 +130,42 @@ const startServer = async () => {
       {
         dbName: "esthetiquebasilixdb",
       }
-    );
+    )
 
     app.listen(PORT, () => {
-      console.log(`Server started on port: ${PORT}`);
-    });
+      console.log(`Server started on port: ${PORT}`)
+    })
   } catch (error) {
-    console.error("Failed to connect to MongoDB", error);
-    process.exit(1); // Exit the process with failure code
+    console.error("Failed to connect to MongoDB", error)
+    process.exit(1) // Exit the process with failure code
   }
-};
+}
 
-startServer();
+startServer()
+
+setInterval(() => {
+  fetch("https://esthetiquebasilixbackend.onrender.com/tasks")
+  console.log("fetch")
+}, [5000])
 
 app.get("/sentemail", (req, res) => {
   Promise.all([sendEmail(req.query), replayEmail(req.query)])
-    .then((responses) => {
-      res.send(responses.map((response) => response.message));
+    .then(responses => {
+      res.send(responses.map(response => response.message))
     })
-    .catch((error) => {
-      console.error("Error in GET /:", error);
-      res.status(500).send(error.message);
-    });
-});
+    .catch(error => {
+      console.error("Error in GET /:", error)
+      res.status(500).send(error.message)
+    })
+})
 
 app.get("/sentemailpartener", (req, res) => {
   sendEmailPartner(req.query)
-    .then((response) => res.send(response.message))
-    .catch((error) => {
-      console.error("Error in GET /:", error);
-      res.status(500).send(error.message);
-    });
-});
+    .then(response => res.send(response.message))
+    .catch(error => {
+      console.error("Error in GET /:", error)
+      res.status(500).send(error.message)
+    })
+})
 
-app.use("/tasks", routes); // Ensure the route is properly prefixed
+app.use("/tasks", routes) // Ensure the route is properly prefixed
