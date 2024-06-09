@@ -90,7 +90,7 @@ function replayEmail({ data, email, name, service, surname, tel, time }) {
       service: "gmail",
       auth: {
         user: "rdvbasilix@gmail.com",
-        pass: "oyuf uxfc ryyd yihy",
+        pass: "kqli anfa tbho ctad",
       },
     });
 
