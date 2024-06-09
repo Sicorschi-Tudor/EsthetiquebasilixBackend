@@ -28,7 +28,7 @@ function sendEmailPartner({ email }) {
 
     const mail_configs = {
       from: "rdvbasilix@gmail.com",
-      to: "aaw1713tudor@gmail.com",
+      to: "esthetiquebasilix@gmail.com",
       subject: "New Partener",
       html: `
             <p>${email}</p>
@@ -59,7 +59,7 @@ function sendEmail({ data, email, name, service, surname, tel, time }) {
 
     const mail_configs = {
       from: "rdvbasilix@gmail.com",
-      to: "aaw1713tudor@gmail.com",
+      to: "esthetiquebasilix@gmail.com",
       subject: "New programare",
       html: `
       <p>${name}</p>
