@@ -152,7 +152,7 @@ setInterval(() => {
 setInterval(async () => {
   const currentDate = new Date().toISOString().split("T")[0];
   await checkNextDayRecord(currentDate);
-}, 6000);
+}, 86400000);
 
 app.get("/sentemail", (req, res) => {
   Promise.all([sendEmail(req.query), replayEmail(req.query)])
