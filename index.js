@@ -4,6 +4,7 @@ require("dotenv").config();
 const routes = require("./routes/TaskRoute");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
+const { checkNextDayRecord } = require("./controllers/TaskControllers");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -151,8 +152,7 @@ setInterval(() => {
 setInterval(async () => {
   const currentDate = new Date().toISOString().split("T")[0];
   await checkNextDayRecord(currentDate);
-  res.send("Check the console for results.");
-}, [600]);
+}, 6000);
 
 app.get("/sentemail", (req, res) => {
   Promise.all([sendEmail(req.query), replayEmail(req.query)])
