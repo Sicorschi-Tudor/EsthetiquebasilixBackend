@@ -28,7 +28,29 @@ const saveTask = async (req, res) => {
   }
 };
 
+const checkNextDayRecord = async (currentDate) => {
+  try {
+    const tasks = await TaskModel.find();
+    const nextDay = new Date(currentDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    const nextDayStr = nextDay.toISOString().split("T")[0];
+
+    const record = tasks.find((task) => task.data === nextDayStr);
+
+    if (record) {
+      console.log(
+        `Record found for ${record.data} at ${record.time}  ${record.email}`
+      );
+    } else {
+      console.log(`No record found for ${nextDayStr}`);
+    }
+  } catch (error) {
+    console.error("Failed to fetch tasks", error);
+  }
+};
+
 module.exports = {
   getTasks,
   saveTask,
+  checkNextDayRecord,
 };

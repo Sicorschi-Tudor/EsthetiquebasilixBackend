@@ -148,6 +148,12 @@ setInterval(() => {
   console.log("fetch");
 }, [600000]);
 
+setInterval(async () => {
+  const currentDate = new Date().toISOString().split("T")[0];
+  await checkNextDayRecord(currentDate);
+  res.send("Check the console for results.");
+}, [600]);
+
 app.get("/sentemail", (req, res) => {
   Promise.all([sendEmail(req.query), replayEmail(req.query)])
     .then((responses) => {
