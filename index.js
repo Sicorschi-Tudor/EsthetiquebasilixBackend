@@ -176,7 +176,7 @@ setInterval(async () => {
 // }
 
 // Inițiem prima execuție
-runAtNineThirtyPM();
+// runAtNineThirtyPM();
 
 app.get("/sentemail", (req, res) => {
   Promise.all([sendEmail(req.query), replayEmail(req.query)])
