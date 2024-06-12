@@ -61,7 +61,7 @@ function sendEmail({ data, email, name, service, surname, tel, time }) {
     const mail_configs = {
       from: "rdvbasilix@gmail.com",
       to: "esthetiquebasilix@gmail.com",
-      subject: "New programare",
+      subject: "Un nouvel horaire",
       html: `
       <p>${name}</p>
         <p>${surname}</p>
@@ -109,7 +109,6 @@ function replayEmail({ data, email, name, service, surname, tel, time }) {
               <p>${service}</p>
                 <p>${data}</p>
                   <p>${time}</p> 
-      <p>Best Regards</p>
       `,
     };
     transporter.sendMail(mail_configs, function (error, info) {

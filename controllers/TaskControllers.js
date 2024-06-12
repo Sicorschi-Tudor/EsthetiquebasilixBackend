@@ -14,9 +14,9 @@ function replayEmailResponder(record) {
     const mail_configs = {
       from: "rdvbasilix@gmail.com",
       to: record.email,
-      subject: "remindere basilix",
+      subject: "Reminder Esthétique Basilix",
       html: `
-        <p>Nu uitati ca sunteti programat pe miine</p>
+<p>Cher/Chère ${record.surname} , nous vous rappelons que vous avez un rendez-vous prévu dans notre centre esthétique demain. Nous vous remercions pour votre ponctualité et nous espérons vous offrir notre meilleur service. À bientôt !</p>
       <p>${record.name}</p>
         <p>${record.surname}</p>
           <p>${record.tel}</p>
@@ -24,7 +24,11 @@ function replayEmailResponder(record) {
               <p>${record.service}</p>
                 <p>${record.data}</p>
                   <p>${record.time}</p> 
-      <p>Best Regards</p>
+    <p>Centre Esthétique Basilix</p>
+     <p>Basilix Shopping Center (2ème étage)</p>
+      <p>Av. Charles-Quint 420, 1083 Berchem Sainte-Agathe</p>
+       <p>T +32 (0) 2 35 45 798</p>
+        <p>GSM +32 460 94 78 30</p>
       `,
     };
     transporter.sendMail(mail_configs, function (error, info) {
