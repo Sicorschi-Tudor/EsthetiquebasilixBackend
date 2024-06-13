@@ -26,7 +26,7 @@ function replayEmailResponder(record) {
                   <p>${record.time}</p> 
     <p>Centre Esthétique Basilix</p>
      <p>Basilix Shopping Center (2ème étage)</p>
-      <p>Av. Charles-Quint 420, 1083 Berchem Sainte-Agathe</p>
+      <p>Av. Charles-Quint 420, 1082 Berchem Sainte-Agathe</p>
        <p>T +32 (0) 2 35 45 798</p>
         <p>GSM +32 460 94 78 30</p>
       `,
