@@ -142,7 +142,7 @@ function replayEmailPartner({ email }) {
 <p>Bonjour, </p>
 <p>Nous vous remercions de votre intérêt pour une collaboration avec nous. </p>
 <p>Afin de pouvoir discuter plus en détail de cette possibilité, nous vous prions de bien vouloir nous fournir plus d'informations sur les services que vous proposez, les avantages que vous apportez à vos partenaires ainsi que toute autre information pertinente que vous jugez importante. </p>
-<p>Nous vous invitons à nous envoyer ces informations à l'adresse esthetiquebasilix@gmail.com ou en répondant à ce message.</p>
+<p>Nous vous invitons à nous envoyer ces informations à esthetiquebasilix@gmail.com .</p>
 <p>Nous sommes ouverts à fixer une rencontre pour explorer toutes les façons dont nous pouvons collaborer au bénéfice des deux parties. </p>
 <p>Nous attendons avec impatience votre réponse et sommes impatients de construire ensemble un partenariat réussi.</p>
 <p>Cordialement,</p>
