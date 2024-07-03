@@ -17,7 +17,7 @@ app.use((req, res, next) => {
   next();
 });
 
-function sendEmailPartner({ email }) {
+function sendEmailPartner({ email, textarea }) {
   return new Promise((resolve, reject) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -33,6 +33,7 @@ function sendEmailPartner({ email }) {
       subject: "New Partener",
       html: `
             <p>${email}</p>
+            <p>${textarea}</p>
       <p>Partener</p>
       `,
     };
@@ -98,7 +99,7 @@ function replayEmail({ data, email, name, service, surname, tel, time }) {
     const mail_configs = {
       from: "rdvbasilix@gmail.com",
       to: email,
-      subject: "New programare",
+      subject: "Un nouvel horaire",
       html: `
 <p>Inscription réussie! </p>
 <p>Votre rendez-vous a été enregistré avec succès.</p>
@@ -109,6 +110,43 @@ function replayEmail({ data, email, name, service, surname, tel, time }) {
               <p>${service}</p>
                 <p>${data}</p>
                   <p>${time}</p> 
+      `,
+    };
+    transporter.sendMail(mail_configs, function (error, info) {
+      if (error) {
+        console.log("Error sending email:", error);
+        return reject({
+          message: "An error has occurred while sending the email",
+        });
+      }
+      return resolve({ message: "Email sent successfully" });
+    });
+  });
+}
+
+function replayEmailPartner({ email }) {
+  return new Promise((resolve, reject) => {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "rdvbasilix@gmail.com",
+        pass: "kqli anfa tbho ctad",
+      },
+    });
+
+    const mail_configs = {
+      from: "rdvbasilix@gmail.com",
+      to: email,
+      subject: "Un nouvel horaire",
+      html: `
+<p>Bonjour, </p>
+<p>Nous vous remercions de votre intérêt pour une collaboration avec nous. </p>
+<p>Afin de pouvoir discuter plus en détail de cette possibilité, nous vous prions de bien vouloir nous fournir plus d'informations sur les services que vous proposez, les avantages que vous apportez à vos partenaires ainsi que toute autre information pertinente que vous jugez importante. </p>
+<p>Nous vous invitons à nous envoyer ces informations à l'adresse esthetiquebasilix@gmail.com ou en répondant à ce message.</p>
+<p>Nous sommes ouverts à fixer une rencontre pour explorer toutes les façons dont nous pouvons collaborer au bénéfice des deux parties. </p>
+<p>Nous attendons avec impatience votre réponse et sommes impatients de construire ensemble un partenariat réussi.</p>
+<p>Cordialement,</p>
+<p>Centre Esthetique Basilix</p>
       `,
     };
     transporter.sendMail(mail_configs, function (error, info) {
@@ -189,7 +227,7 @@ app.get("/sentemail", (req, res) => {
 });
 
 app.get("/sentemailpartener", (req, res) => {
-  sendEmailPartner(req.query)
+  Promise.all([sendEmailPartner(req.query), replayEmailPartner(req.query)])
     .then((response) => res.send(response.message))
     .catch((error) => {
       console.error("Error in GET /:", error);
