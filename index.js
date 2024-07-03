@@ -146,7 +146,7 @@ function replayEmailPartner({ email }) {
 <p>Nous sommes ouverts à fixer une rencontre pour explorer toutes les façons dont nous pouvons collaborer au bénéfice des deux parties. </p>
 <p>Nous attendons avec impatience votre réponse et sommes impatients de construire ensemble un partenariat réussi.</p>
 <p>Cordialement,</p>
-<p>Centre Esthetique Basilix</p>
+<p>Centre Esthétique Basilix</p>
       `,
     };
     transporter.sendMail(mail_configs, function (error, info) {
