@@ -77,8 +77,9 @@ const checkNextDayRecord = async () => {
     const tasks = await TaskModel.find();
     const currentDate = moment().tz("Europe/Paris"); // Get the current date and time in Europe
     const nextDay = currentDate.clone().add(1, "day"); // Add 1 day to get the next day
-
-    const records = tasks.filter((task) => task.data === nextDay);
+    const records = tasks.filter(
+      (task) => task.data === nextDay.format("YYYY-MM-DD")
+    );
 
     if (records.length > 0) {
       records.forEach((record) => {
@@ -91,7 +92,7 @@ const checkNextDayRecord = async () => {
           });
       });
     } else {
-      console.log(`No record found for ${nextDay}`);
+      console.log(`No record found for ${nextDay.format("YYYY-MM-DD")}`);
     }
   } catch (error) {
     console.error("Failed to fetch tasks", error);
