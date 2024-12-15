@@ -188,8 +188,7 @@ setInterval(() => {
 }, [600000]);
 
 setInterval(async () => {
-  const currentDate = new Date().toISOString().split("T")[0];
-  await checkNextDayRecord(currentDate);
+  await checkNextDayRecord();
 }, 86400000);
 
 // async function runAtNineThirtyPM() {

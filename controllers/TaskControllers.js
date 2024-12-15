@@ -1,5 +1,6 @@
 const TaskModel = require("../Models/TaskModels");
 const nodemailer = require("nodemailer");
+const moment = require("moment-timezone");
 
 function replayEmailResponder(record) {
   return new Promise((resolve, reject) => {
@@ -71,14 +72,13 @@ const saveTask = async (req, res) => {
   }
 };
 
-const checkNextDayRecord = async (currentDate) => {
+const checkNextDayRecord = async () => {
   try {
     const tasks = await TaskModel.find();
-    const nextDay = new Date(currentDate);
-    nextDay.setDate(nextDay.getDate() + 2); // Change back to +1 if you want to check only the next day
-    const nextDayStr = nextDay.toISOString().split("T")[0];
+    const currentDate = moment().tz("Europe/Paris"); // Get the current date and time in Europe
+    const nextDay = currentDate.clone().add(1, "day"); // Add 1 day to get the next day
 
-    const records = tasks.filter((task) => task.data === nextDayStr);
+    const records = tasks.filter((task) => task.data === nextDay);
 
     if (records.length > 0) {
       records.forEach((record) => {
@@ -91,7 +91,7 @@ const checkNextDayRecord = async (currentDate) => {
           });
       });
     } else {
-      console.log(`No record found for ${nextDayStr}`);
+      console.log(`No record found for ${nextDay}`);
     }
   } catch (error) {
     console.error("Failed to fetch tasks", error);
