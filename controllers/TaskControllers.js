@@ -17,7 +17,7 @@ function replayEmailResponder(record) {
       to: record.email,
       subject: "Reminder Esthétique Basilix",
       html: `
-<p>Cher/Chère ${record.surname} , nous vous rappelons que vous avez un rendez-vous prévu dans notre centre esthétique demain. Nous vous remercions pour votre ponctualité et nous espérons vous offrir notre meilleur service. À bientôt !</p>
+<p>Cher/Chère ${record.surname} , nous vous rappelons que vous avez un rendez-vous prévu dans notre centre esthétique le ${record.data}. Nous vous remercions pour votre ponctualité et nous espérons vous offrir notre meilleur service. À bientôt !</p>
       <p>${record.name}</p>
         <p>${record.surname}</p>
           <p>${record.tel}</p>
