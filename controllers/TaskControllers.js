@@ -12,27 +12,42 @@ function replayEmailResponder(record) {
       },
     });
 
+    const formattedDate = moment(record.data).format("DD-MM-YYYY");
+
     const mail_configs = {
       from: "rdvbasilix@gmail.com",
       to: record.email,
       subject: "Reminder Esthétique Basilix",
       html: `
-<p>Cher/Chère ${record.surname} , nous vous rappelons que vous avez un rendez-vous prévu "au Centre Esthétique Basilix, le ${record.data} à ${record.time}". Nous vous remercions pour votre ponctualité et nous espérons vous offrir notre meilleur service. À bientôt !</p>
-      <p>${record.name}</p>
-        <p>${record.surname}</p>
-          <p>${record.tel}</p>
-            <p>${record.email}</p>
-              <p>${record.service}</p>
-                <p>${record.data}</p>
-                  <p>${record.time}</p> 
+    <p>
+      Cher/Chère ${record.surname} , nous vous rappelons que vous avez un
+      rendez-vous prévu au Centre Esthétique Basilix, le ${formattedDate} à
+      ${record.time}. Nous vous remercions pour votre ponctualité et nous
+      espérons vous offrir notre meilleur service.
+    </p>
+    <p>À bientôt !</p>
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <p>${record.name}</p>
+    <p>${record.surname}</p>
+    <p>${record.tel}</p>
+    <p>${record.email}</p>
+    <p>${record.service}</p>
+    <p>${formattedDate}</p>
+    <p>${record.time}</p>
+    <br />
+    <br />
+    <br />
     <p>Cordialement</p>
-    
-    <p>Centre Esthétique Basilix</p>
-      <p>Avenue Charles-Quint 420, Berchem Sainte-Agathe</p>
-        <p>(Bruxelles)</p>
-        <p>T +32 (0) 2 35 45 798</p>
-
-         <p>10h00 - 19h00</p>
+    <br />
+    <p><b>Centre Esthétique Basilix</b></p>
+    <p>Avenue Charles-Quint 420, Berchem-Sainte-Agathe</p>
+    <p>(Bruxelles)</p>
+    <p>T +32 (0) 2 35 45 798</p>
+    <p>10h00 - 19h00</p>
       `,
     };
     transporter.sendMail(mail_configs, function (error, info) {
