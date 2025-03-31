@@ -5,6 +5,7 @@ const routes = require("./routes/TaskRoute");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
 const { checkNextDayRecord } = require("./controllers/TaskControllers");
+const cron = require("node-cron");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -64,16 +65,25 @@ function sendEmail({ data, email, name, service, surname, tel, time }) {
       to: "esthetiquebasilix@gmail.com",
       subject: "Un nouvel horaire",
       html: `
-      <p>${name}</p>
-        <p>${surname}</p>
-          <p>${tel}</p>
-            <p>${email}</p>
-              <p>${service}</p>
-                <p>${data}</p>
-                  <p>${time}</p> 
-      <p>Best Regards</p>
-      `,
+    <p>Chère Madame,</p>
+    <p>Nous vous informons que votre rendez-vous a été confirmé pour la date et l'heure indiquées ci-dessous :</p>
+    
+    <ul>
+      <li><strong>Nom :</strong> ${name}</li>
+      <li><strong>Prénom :</strong> ${surname}</li>
+      <li><strong>Téléphone :</strong> ${tel}</li>
+      <li><strong>E-mail :</strong> ${email}</li>
+      <li><strong>Service :</strong> ${service}</li>
+      <li><strong>Date :</strong> ${data}</li>
+      <li><strong>Heure :</strong> ${time}</li>
+    </ul>
+
+    <p>Pour toute modification, veuillez appeler le <strong>02 354 57 98</strong> (10h00 - 19h00) ou répondre à cet e-mail <strong>au moins 24 heures à l'avance</strong>.</p>
+
+    <p>Merci !</p>
+  `,
     };
+
     transporter.sendMail(mail_configs, function (error, info) {
       if (error) {
         console.log("Error sending email:", error);
@@ -183,13 +193,14 @@ const startServer = async () => {
 startServer();
 
 setInterval(() => {
-  fetch("https://esthetiquebasilixbackend.onrender.com/tasks");
+  fetch("https://trustoptimabackend.onrender.com");
   console.log("fetch");
 }, [600000]);
 
-setInterval(async () => {
+// Programarea cronjob-ului pentru a se executa zilnic la ora 09:00 AM
+cron.schedule("0 9 * * *", async () => {
   await checkNextDayRecord();
-}, 86400000);
+});
 
 // async function runAtNineThirtyPM() {
 //   const now = new Date();
