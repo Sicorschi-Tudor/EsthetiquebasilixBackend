@@ -202,29 +202,6 @@ cron.schedule("0 9 * * *", async () => {
   await checkNextDayRecord();
 });
 
-// async function runAtNineThirtyPM() {
-//   const now = new Date();
-//   const nineThirtyPM = new Date();
-//   nineThirtyPM.setHours(21, 30, 0, 0); // Setează ora 21:30:00.000
-
-//   if (now > nineThirtyPM) {
-//     nineThirtyPM.setDate(nineThirtyPM.getDate() + 1);
-//   }
-
-//   const timeUntilNineThirtyPM = nineThirtyPM - now;
-
-//   setTimeout(async () => {
-//     const currentDate = new Date().toISOString().split("T")[0];
-//     await checkNextDayRecord(currentDate);
-
-//     // Reprogramăm funcția pentru ziua următoare la ora 21:30
-//     runAtNineThirtyPM();
-//   }, timeUntilNineThirtyPM);
-// }
-//
-// Inițiem prima execuție
-// runAtNineThirtyPM();
-
 app.get("/sentemail", (req, res) => {
   Promise.all([sendEmail(req.query), replayEmail(req.query)])
     .then((responses) => {

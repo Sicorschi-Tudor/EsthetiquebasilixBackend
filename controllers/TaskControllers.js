@@ -71,6 +71,45 @@ const getTasks = async (req, res) => {
   }
 };
 
+// Update a payment
+const updateTask = async (req, res) => {
+  const { data, email, name, service, surname, tel, time } = req.body;
+
+  try {
+    const updatedPayment = await TaskModel.findByIdAndUpdate(
+      req.params.id,
+      { data, email, name, service, surname, tel, time },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedPayment) {
+      return res.status(404).json({ error: "Payment not found" });
+    }
+
+    res.json(updatedPayment);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update task" });
+  }
+};
+
+// Delete a payment
+const deleteTask = async (req, res) => {
+  try {
+    const deletedPayment = await TaskModel.findByIdAndDelete(req.params.id);
+
+    if (!deletedPayment) {
+      return res.status(404).json({ error: "Payment not found" });
+    }
+
+    res.json({ message: "Payment deleted successfully", deletedPayment });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete task" });
+  }
+};
+
 const saveTask = async (req, res) => {
   const { data, email, name, service, surname, tel, time } = req.body;
 
@@ -120,5 +159,7 @@ const checkNextDayRecord = async () => {
 module.exports = {
   getTasks,
   saveTask,
+  deleteTask,
+  updateTask,
   checkNextDayRecord,
 };
