@@ -71,14 +71,16 @@ const getTasks = async (req, res) => {
   }
 };
 
-// Update a payment
 const updateTask = async (req, res) => {
-  const { data, email, name, service, surname, tel, time } = req.body;
-
   try {
+    const {
+      _id, // extragem separat și îl ignorăm
+      ...fieldsToUpdate // restul merge în update
+    } = req.body;
+
     const updatedPayment = await TaskModel.findByIdAndUpdate(
       req.params.id,
-      { data, email, name, service, surname, tel, time },
+      fieldsToUpdate,
       {
         new: true,
         runValidators: true,
@@ -91,6 +93,7 @@ const updateTask = async (req, res) => {
 
     res.json(updatedPayment);
   } catch (error) {
+    console.error("Update error:", error);
     res.status(500).json({ error: "Failed to update task" });
   }
 };
