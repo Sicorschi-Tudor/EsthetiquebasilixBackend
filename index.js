@@ -96,6 +96,99 @@ function sendEmail({ data, email, name, service, surname, tel, time }) {
   });
 }
 
+function sendEmailDelete({ data, email, name, service, surname, tel, time }) {
+  return new Promise((resolve, reject) => {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "rdvbasilix@gmail.com",
+        pass: "kqli anfa tbho ctad",
+      },
+    });
+
+    const mail_configs = {
+      from: "rdvbasilix@gmail.com",
+      to: "esthetiquebasilix@gmail.com",
+      subject: "Votre rendez-vous a été annulé",
+      html: `
+    <p>Bonjour ${name},</p>
+    <p>Nous vous informons qu'à votre demande ou pour d'autres raisons, votre rendez-vous au Centre Esthétique Basilix a été annulé. Si vous estimez qu'il s'agit d'une erreur de notre part, n'hésitez pas à nous le faire savoir en répondant à ce message.</p>
+    <p>Nous vous rappelons que vous pouvez prendre un nouveau rendez-vous pour un traitement dans notre centre en accédant à www.esthetiquebasilix.be .</p>
+    <p>Merci de votre compréhension, et nous serons ravis de vous accueillir à nouveau !</p>
+    <ul>
+      <li><strong>Nom :</strong> ${name}</li>
+      <li><strong>Prénom :</strong> ${surname}</li>
+      <li><strong>Téléphone :</strong> ${tel}</li>
+      <li><strong>E-mail :</strong> ${email}</li>
+      <li><strong>Service :</strong> ${service}</li>
+      <li><strong>Date :</strong> ${data}</li>
+      <li><strong>Heure :</strong> ${time}</li>
+    </ul>
+
+    <p>Cordialement,</p>
+
+    <p>Centre Esthétique Basilix</p>
+  `,
+    };
+
+    transporter.sendMail(mail_configs, function (error, info) {
+      if (error) {
+        console.log("Error sending email:", error);
+        return reject({
+          message: "An error has occurred while sending the email",
+        });
+      }
+      return resolve({ message: "Email sent successfully" });
+    });
+  });
+}
+
+function replayEmailDelete({ data, email, name, service, surname, tel, time }) {
+  return new Promise((resolve, reject) => {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "rdvbasilix@gmail.com",
+        pass: "kqli anfa tbho ctad",
+      },
+    });
+
+    const mail_configs = {
+      from: "rdvbasilix@gmail.com",
+      to: email,
+      subject: "Votre rendez-vous a été annulé",
+      html: `
+    <p>Bonjour ${name},</p>
+    <p>Nous vous informons qu'à votre demande ou pour d'autres raisons, votre rendez-vous au Centre Esthétique Basilix a été annulé. Si vous estimez qu'il s'agit d'une erreur de notre part, n'hésitez pas à nous le faire savoir en répondant à ce message.</p>
+    <p>Nous vous rappelons que vous pouvez prendre un nouveau rendez-vous pour un traitement dans notre centre en accédant à www.esthetiquebasilix.be .</p>
+    <p>Merci de votre compréhension, et nous serons ravis de vous accueillir à nouveau !</p>
+    <ul>
+      <li><strong>Nom :</strong> ${name}</li>
+      <li><strong>Prénom :</strong> ${surname}</li>
+      <li><strong>Téléphone :</strong> ${tel}</li>
+      <li><strong>E-mail :</strong> ${email}</li>
+      <li><strong>Service :</strong> ${service}</li>
+      <li><strong>Date :</strong> ${data}</li>
+      <li><strong>Heure :</strong> ${time}</li>
+    </ul>
+
+    <p>Cordialement,</p>
+
+    <p>Centre Esthétique Basilix</p>
+  `,
+    };
+    transporter.sendMail(mail_configs, function (error, info) {
+      if (error) {
+        console.log("Error sending email:", error);
+        return reject({
+          message: "An error has occurred while sending the email",
+        });
+      }
+      return resolve({ message: "Email sent successfully" });
+    });
+  });
+}
+
 function replayEmail({ data, email, name, service, surname, tel, time }) {
   return new Promise((resolve, reject) => {
     const transporter = nodemailer.createTransport({
@@ -204,6 +297,17 @@ cron.schedule("0 9 * * *", async () => {
 
 app.get("/sentemail", (req, res) => {
   Promise.all([sendEmail(req.query), replayEmail(req.query)])
+    .then((responses) => {
+      res.send(responses.map((response) => response.message));
+    })
+    .catch((error) => {
+      console.error("Error in GET /:", error);
+      res.status(500).send(error.message);
+    });
+});
+
+app.get("/sentemailDelete", (req, res) => {
+  Promise.all([sendEmailDelete(req.query), replayEmailDelete(req.query)])
     .then((responses) => {
       res.send(responses.map((response) => response.message));
     })
