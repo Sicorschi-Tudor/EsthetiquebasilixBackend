@@ -111,7 +111,7 @@ function sendEmailDelete({ data, email, name, service, surname, tel, time }) {
       to: "esthetiquebasilix@gmail.com",
       subject: "Votre rendez-vous a été annulé",
       html: `
-    <p>Bonjour ${name},</p>
+    <p>Bonjour Madame ${name},</p>
     <p>Nous vous informons qu'à votre demande ou pour d'autres raisons, votre rendez-vous au Centre Esthétique Basilix a été annulé. Si vous estimez qu'il s'agit d'une erreur de notre part, n'hésitez pas à nous le faire savoir en répondant à ce message.</p>
     <p>Nous vous rappelons que vous pouvez prendre un nouveau rendez-vous pour un traitement dans notre centre en accédant à www.esthetiquebasilix.be .</p>
     <p>Merci de votre compréhension, et nous serons ravis de vous accueillir à nouveau !</p>
@@ -158,7 +158,7 @@ function replayEmailDelete({ data, email, name, service, surname, tel, time }) {
       to: email,
       subject: "Votre rendez-vous a été annulé",
       html: `
-    <p>Bonjour ${name},</p>
+    <p>Bonjour Madame ${name},</p>
     <p>Nous vous informons qu'à votre demande ou pour d'autres raisons, votre rendez-vous au Centre Esthétique Basilix a été annulé. Si vous estimez qu'il s'agit d'une erreur de notre part, n'hésitez pas à nous le faire savoir en répondant à ce message.</p>
     <p>Nous vous rappelons que vous pouvez prendre un nouveau rendez-vous pour un traitement dans notre centre en accédant à www.esthetiquebasilix.be .</p>
     <p>Merci de votre compréhension, et nous serons ravis de vous accueillir à nouveau !</p>
