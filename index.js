@@ -18,6 +18,25 @@ app.use((req, res, next) => {
   next();
 });
 
+function formatDateForUser(input) {
+  if (input === undefined || input === null) return input;
+  const str = String(input).trim();
+  if (!str) return str;
+
+  const datePart = str.split("T")[0].split(" ")[0];
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+  if (!match) return str; 
+
+  const [, year, month, day] = match;
+
+  const mm = Number(month);
+  const dd = Number(day);
+  if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return str;
+
+  return `${day}-${month}-${year}`;
+}
+
 function sendEmailPartner({ email, textarea }) {
   return new Promise((resolve, reject) => {
     const transporter = nodemailer.createTransport({
@@ -74,7 +93,7 @@ function sendEmail({ data, email, name, service, surname, tel, time }) {
       <li><strong>Téléphone :</strong> ${tel}</li>
       <li><strong>E-mail :</strong> ${email}</li>
       <li><strong>Service :</strong> ${service}</li>
-      <li><strong>Date :</strong> ${data}</li>
+      <li><strong>Date :</strong> ${formatDateForUser(data)}</li>
       <li><strong>Heure :</strong> ${time}</li>
     </ul>
 
@@ -121,7 +140,7 @@ function sendEmailDelete({ data, email, name, service, surname, tel, time }) {
       <li><strong>Téléphone :</strong> ${tel}</li>
       <li><strong>E-mail :</strong> ${email}</li>
       <li><strong>Service :</strong> ${service}</li>
-      <li><strong>Date :</strong> ${data}</li>
+      <li><strong>Date :</strong> ${formatDateForUser(data)}</li>
       <li><strong>Heure :</strong> ${time}</li>
     </ul>
 
@@ -168,7 +187,7 @@ function replayEmailDelete({ data, email, name, service, surname, tel, time }) {
       <li><strong>Téléphone :</strong> ${tel}</li>
       <li><strong>E-mail :</strong> ${email}</li>
       <li><strong>Service :</strong> ${service}</li>
-      <li><strong>Date :</strong> ${data}</li>
+      <li><strong>Date :</strong> ${formatDateForUser(data)}</li>
       <li><strong>Heure :</strong> ${time}</li>
     </ul>
 
@@ -211,7 +230,7 @@ function replayEmail({ data, email, name, service, surname, tel, time }) {
           <p>${tel}</p>
             <p>${email}</p>
               <p>${service}</p>
-                <p>${data}</p>
+                <p>${formatDateForUser(data)}</p>
                   <p>${time}</p> 
       `,
     };
