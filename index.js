@@ -305,7 +305,7 @@ const startServer = async () => {
 startServer();
 
 setInterval(() => {
-  fetch("https://trustoptimabackend.onrender.com");
+  fetch("https://esthetiquebasilixbackend.onrender.com/tasks/get");
   console.log("fetch");
 }, [600000]);
 

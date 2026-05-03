@@ -34,4 +34,6 @@ const taskSchema = new mongoose.Schema(
   { collection: "db" }
 );
 
+taskSchema.index({ data: 1, time: 1 }, { unique: true });
+
 module.exports = mongoose.model("Task", taskSchema);

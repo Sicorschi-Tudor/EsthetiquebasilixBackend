@@ -128,7 +128,11 @@ const saveTask = async (req, res) => {
     });
     res.status(201).json(newTask);
   } catch (error) {
-    res.status(500).json({ error: "Failed to save task" });
+    if (error.code === 11000) {
+      res.status(409).json({ error: "Time slot already taken" });
+    } else {
+      res.status(500).json({ error: "Failed to save task" });
+    }
   }
 };
 
