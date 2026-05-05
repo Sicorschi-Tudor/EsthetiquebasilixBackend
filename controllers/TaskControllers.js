@@ -1,66 +1,6 @@
 const TaskModel = require("../Models/TaskModels");
-const nodemailer = require("nodemailer");
 const moment = require("moment-timezone");
-
-function replayEmailResponder(record) {
-  return new Promise((resolve, reject) => {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "rdvbasilix@gmail.com",
-        pass: "kqli anfa tbho ctad",
-      },
-    });
-
-    const formattedDate = moment(record.data).format("DD-MM-YYYY");
-
-    const mail_configs = {
-      from: "rdvbasilix@gmail.com",
-      to: record.email,
-      subject: "Reminder Esthétique Basilix",
-      html: `
-    <p>
-      Bonjour Madame ${record.name} , nous vous rappelons que vous avez un
-      rendez-vous prévu au Centre Esthétique Basilix, le ${formattedDate} à
-      ${record.time}. Nous vous remercions pour votre ponctualité et nous
-      espérons vous offrir notre meilleur service.
-    </p>
-    <p>À bientôt !</p>
-    <br />
-    <br />
-    <br />
-    <br />
-    <br />
-    <p>${record.name}</p>
-    <p>${record.surname}</p>
-    <p>${record.tel}</p>
-    <p>${record.email}</p>
-    <p>${record.service}</p>
-    <p>${formattedDate}</p>
-    <p>${record.time}</p>
-    <br />
-    <br />
-    <br />
-    <p>Cordialement</p>
-    <br />
-    <p><b>Centre Esthétique Basilix</b></p>
-    <p>Avenue Charles-Quint 420, Berchem-Sainte-Agathe</p>
-    <p>(Bruxelles)</p>
-    <p>T +32 (0) 2 35 45 798</p>
-    <p>10h00 - 19h00</p>
-      `,
-    };
-    transporter.sendMail(mail_configs, function (error, info) {
-      if (error) {
-        console.log("Error sending email:", error);
-        return reject({
-          message: "An error has occurred while sending the email",
-        });
-      }
-      return resolve({ message: "Email sent successfully" });
-    });
-  });
-}
+const { sendBookingConfirmation, sendBookingReminder } = require("../utils/emailService");
 
 const getTasks = async (req, res) => {
   try {
@@ -73,40 +13,31 @@ const getTasks = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
-    const {
-      _id, // extragem separat și îl ignorăm
-      ...fieldsToUpdate // restul merge în update
-    } = req.body;
-
+    const { _id, ...fieldsToUpdate } = req.body;
     const updatedPayment = await TaskModel.findByIdAndUpdate(
       req.params.id,
       fieldsToUpdate,
-      {
-        new: true,
-        runValidators: true,
-      }
+      { new: true, runValidators: true }
     );
-
     if (!updatedPayment) {
       return res.status(404).json({ error: "Payment not found" });
     }
-
     res.json(updatedPayment);
   } catch (error) {
     console.error("Update error:", error);
+    if (error.code === 11000) {
+      return res.status(409).json({ error: "Time slot already taken" });
+    }
     res.status(500).json({ error: "Failed to update task" });
   }
 };
 
-// Delete a payment
 const deleteTask = async (req, res) => {
   try {
     const deletedPayment = await TaskModel.findByIdAndDelete(req.params.id);
-
     if (!deletedPayment) {
       return res.status(404).json({ error: "Payment not found" });
     }
-
     res.json({ message: "Payment deleted successfully", deletedPayment });
   } catch (error) {
     res.status(500).json({ error: "Failed to delete task" });
@@ -116,50 +47,75 @@ const deleteTask = async (req, res) => {
 const saveTask = async (req, res) => {
   const { data, email, name, service, surname, tel, time } = req.body;
 
+  if (!data || !email || !name || !service || !surname || !tel || !time) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
   try {
-    const newTask = await TaskModel.create({
-      data,
-      email,
-      name,
-      service,
-      surname,
-      tel,
-      time,
-    });
-    res.status(201).json(newTask);
-  } catch (error) {
-    if (error.code === 11000) {
-      res.status(409).json({ error: "Time slot already taken" });
-    } else {
-      res.status(500).json({ error: "Failed to save task" });
+    // Operație atomică: inserează DOAR dacă nu există deja aceeași dată+oră.
+    // findOneAndUpdate cu upsert returnează:
+    //   null         → documentul a fost inserat (slot liber, rezervare reușită)
+    //   doc existent → slot-ul era deja ocupat, nu s-a inserat nimic
+    const existing = await TaskModel.findOneAndUpdate(
+      { data, time },
+      { $setOnInsert: { data, email, name, service, surname, tel, time } },
+      { upsert: true, new: false }
+    );
+
+    if (existing !== null) {
+      // Slot ocupat — nu s-a inserat nimic, nu se trimite niciun email
+      return res.status(409).json({ error: "Time slot already taken" });
     }
+
+    // Inserare confirmată de MongoDB — abia acum trimitem emailul de confirmare.
+    // Erorile de email sunt logate dar nu afectează răspunsul (rezervarea e salvată).
+    sendBookingConfirmation({ data, email, name, service, surname, tel, time }).catch(
+      (err) => console.error("Booking confirmation email failed:", err)
+    );
+
+    // Returnăm datele rezervării fără un al doilea apel DB.
+    // Un al doilea findOne ar putea eșua independent și ar returna 500 fals
+    // (rezervarea ar fi salvată, dar userul ar vedea eroare și nu ar primi email).
+    res.status(201).json({ data, email, name, service, surname, tel, time });
+  } catch (error) {
+    // Orice eroare MongoDB (timeout, validare, rețea, write concern, etc.)
+    // ajunge aici — rezervarea NU s-a salvat, emailul NU s-a trimis.
+    if (error.code === 11000) {
+      // Fallback: indexul unic a prins un duplicat (race condition extremă)
+      return res.status(409).json({ error: "Time slot already taken" });
+    }
+    console.error("Save task error:", error.name, error.message, error.code || "");
+    res.status(500).json({ error: "Booking could not be saved. Please try again." });
   }
 };
 
 const checkNextDayRecord = async () => {
   try {
     const tasks = await TaskModel.find();
-    const currentDate = moment().tz("Europe/Paris"); // Get the current date and time in Europe
-    const nextDay = currentDate.clone().add(1, "day"); // Add 1 day to get the next day
-    const records = tasks.filter(
-      (task) => task.data === nextDay.format("YYYY-MM-DD")
-    );
+    const currentDate = moment().tz("Europe/Paris");
+    const nextDay = currentDate.clone().add(1, "day");
+    const nextDayStr = nextDay.format("DD-MM-YYYY");
+
+    const records = tasks.filter((task) => {
+      const taskDate = task.data;
+      // Suportă atât formatul dd-MM-yyyy cât și yyyy-MM-dd
+      if (/^\d{2}-\d{2}-\d{4}$/.test(taskDate)) {
+        return taskDate === nextDayStr;
+      }
+      return taskDate === nextDay.format("YYYY-MM-DD");
+    });
 
     if (records.length > 0) {
       records.forEach((record) => {
-        replayEmailResponder(record)
-          .then((response) =>
-            console.error("Response:", response, "email:", record.email)
-          )
-          .catch((error) => {
-            console.error("Error in GET /:", error);
-          });
+        sendBookingReminder(record)
+          .then(() => console.log("Reminder sent to:", record.email))
+          .catch((err) => console.error("Reminder email failed for", record.email, err));
       });
     } else {
-      console.log(`No record found for ${nextDay.format("YYYY-MM-DD")}`);
+      console.log(`No appointments found for ${nextDayStr}`);
     }
   } catch (error) {
-    console.error("Failed to fetch tasks", error);
+    console.error("Failed to fetch tasks for reminders:", error);
   }
 };
 
