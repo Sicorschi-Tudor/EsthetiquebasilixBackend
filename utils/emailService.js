@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 
 const EMAIL_USER = "rdvbasilix@gmail.com";
-const EMAIL_PASS = "kqli anfa tbho ctad";
+const EMAIL_PASS = "isht brfx mffv zeju";
 const CLINIC_EMAIL = "esthetiquebasilix@gmail.com";
 
 function createTransporter() {
