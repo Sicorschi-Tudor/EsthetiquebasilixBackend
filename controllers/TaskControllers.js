@@ -2,6 +2,21 @@ const TaskModel = require("../Models/TaskModels");
 const moment = require("moment-timezone");
 const { sendBookingConfirmation, sendBookingReminder } = require("../utils/emailService");
 
+// Normalizează data la formatul canonic yyyy-MM-dd, indiferent ce trimite clientul.
+// Astfel aceeași zi reală produce mereu ACELAȘI string, deci indexul unic {data,time}
+// și verificările de slot tratează 13-06-2026 și 2026-06-13 ca fiind același slot.
+const normalizeData = (data) => {
+  if (!data) return data;
+  const s = String(data).trim();
+  // dd-MM-yyyy -> yyyy-MM-dd
+  const m = /^(\d{2})-(\d{2})-(\d{4})$/.exec(s);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  // deja yyyy-MM-dd
+  return s;
+};
+
+const normalizeTime = (time) => (time == null ? time : String(time).trim());
+
 const getTasks = async (req, res) => {
   try {
     const tasks = await TaskModel.find();
@@ -14,6 +29,24 @@ const getTasks = async (req, res) => {
 const updateTask = async (req, res) => {
   try {
     const { _id, ...fieldsToUpdate } = req.body;
+
+    // Normalizează data/ora dacă sunt incluse în update
+    if (fieldsToUpdate.data != null) fieldsToUpdate.data = normalizeData(fieldsToUpdate.data);
+    if (fieldsToUpdate.time != null) fieldsToUpdate.time = normalizeTime(fieldsToUpdate.time);
+
+    // Dacă editarea mută rezervarea pe un slot (data+time), refuză dacă slotul e deja
+    // ocupat de ALTĂ rezervare. Verificare explicită + indexul unic ca plasă de siguranță.
+    if (fieldsToUpdate.data && fieldsToUpdate.time) {
+      const conflict = await TaskModel.findOne({
+        data: fieldsToUpdate.data,
+        time: fieldsToUpdate.time,
+        _id: { $ne: req.params.id },
+      });
+      if (conflict) {
+        return res.status(409).json({ error: "Time slot already taken" });
+      }
+    }
+
     const updatedPayment = await TaskModel.findByIdAndUpdate(
       req.params.id,
       fieldsToUpdate,
@@ -45,7 +78,11 @@ const deleteTask = async (req, res) => {
 };
 
 const saveTask = async (req, res) => {
-  const { data, email, name, service, surname, tel, time } = req.body;
+  const { email, name, service, surname, tel } = req.body;
+  // Normalizează data+ora la formatul canonic ÎNAINTE de orice verificare/inserare,
+  // ca slotul să fie identic indiferent de formatul trimis de client.
+  const data = normalizeData(req.body.data);
+  const time = normalizeTime(req.body.time);
 
   if (!data || !email || !name || !service || !surname || !tel || !time) {
     return res.status(400).json({ error: "All fields are required" });

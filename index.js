@@ -4,6 +4,7 @@ require("dotenv").config();
 const routes = require("./routes/TaskRoute");
 const cors = require("cors");
 const cron = require("node-cron");
+const TaskModel = require("./Models/TaskModels");
 const { checkNextDayRecord } = require("./controllers/TaskControllers");
 const {
   sendBookingConfirmation,
@@ -29,6 +30,29 @@ const startServer = async () => {
       { dbName: "esthetiquebasilixdb" }
     );
     console.log("MongoDB connected");
+
+    // Asigură indexul unic {data,time} în baza de date. Dacă build-ul eșuează
+    // (de obicei pentru că există deja duplicate), logăm CLAR — fără acest index
+    // upsert-ul atomic din saveTask NU previne dubla rezervare.
+    try {
+      // createIndexes DOAR creează indexul lipsă — nu șterge și nu modifică niciun document.
+      await TaskModel.createIndexes();
+      const idx = await TaskModel.collection.indexes();
+      const hasUnique = idx.some(
+        (i) => i.unique && i.key && i.key.data === 1 && i.key.time === 1
+      );
+      console.log(
+        hasUnique
+          ? "✅ Unique index {data,time} ACTIV — dubla rezervare blocată la nivel DB."
+          : "⚠️ Unique index {data,time} LIPSEȘTE. Rulează scriptul de migrare (dedup + createIndex)."
+      );
+    } catch (idxErr) {
+      console.error(
+        "⚠️ Nu s-a putut crea indexul unic {data,time} (probabil există duplicate). " +
+          "Rulează scriptul de migrare pentru a curăța duplicatele și a crea indexul.",
+        idxErr.message
+      );
+    }
 
     app.listen(PORT, () => {
       console.log(`Server started on port: ${PORT}`);
