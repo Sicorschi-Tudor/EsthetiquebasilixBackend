@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const { buildIcs } = require("./calendar");
 
 const EMAIL_USER = "rdvbasilix@gmail.com";
 const EMAIL_PASS = "isht brfx mffv zeju";
@@ -11,10 +12,10 @@ function createTransporter() {
   });
 }
 
-function sendMail(to, subject, html) {
+function sendMail(to, subject, html, extra = {}) {
   return new Promise((resolve, reject) => {
     createTransporter().sendMail(
-      { from: EMAIL_USER, to, subject, html },
+      { from: EMAIL_USER, to, subject, html, ...extra },
       (error, info) => {
         if (error) return reject(error);
         resolve(info);
@@ -66,8 +67,25 @@ async function sendBookingConfirmation({ data, email, name, service, surname, te
 </ul>
 <p>Merci !</p>`;
 
+  // Atașează evenimentul .ics la emailul clientului (universal: Apple/Google/Outlook).
+  // Nu schimbă conținutul HTML — doar adaugă un atașament „rendez-vous.ics".
+  const ics = buildIcs({ data, email, name, service, surname, tel, time });
+  const userExtra = ics
+    ? {
+        attachments: [
+          {
+            filename: "rendez-vous.ics",
+            content: ics,
+            contentType: "text/calendar; charset=utf-8; method=PUBLISH",
+          },
+        ],
+      }
+    : {};
+
   await Promise.all([
-    sendMail(email, "Confirmation de rendez-vous – Esthétique Basilix", userHtml),
+    // → CLIENT (adresa lui de email): primește mesajul + .ics-ul atașat (userExtra)
+    sendMail(email, "Confirmation de rendez-vous – Esthétique Basilix", userHtml, userExtra),
+    // → CLINICĂ: doar notificarea internă, FĂRĂ atașament .ics
     sendMail(CLINIC_EMAIL, "Un nouvel horaire", clinicHtml),
   ]);
 }
