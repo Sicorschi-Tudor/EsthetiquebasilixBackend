@@ -51,13 +51,15 @@ function escapeIcs(str) {
 }
 
 // Construiește conținutul fișierului .ics (iCalendar) pentru o programare.
-// FĂRĂ durată fixă: punem doar ora de început (fără DTEND), fiindcă serviciile au
-// durate diferite și nu vrem să inducem clientul în eroare.
+// DTEND = start + 1h (durata slotului) — OBLIGATORIU ca iOS/Apple Calendar să poată
+// SALVA evenimentul (fără DTEND, iOS îl afișează dar nu-l salvează). În descriere se
+// precizează că durata reală variază după serviciu.
 // Include o notificare cu 2 zile înainte de programare.
 function buildIcs(booking) {
   const { data, time, service, name, surname, email } = booking;
   const start = startMoment(data, time);
   if (!start.isValid()) return null;
+  const end = start.clone().add(1, "hour");
 
   const uid =
     `${normDate(data)}-${String(time)}-${String(email || "").replace(/[^a-zA-Z0-9]/g, "")}` +
@@ -72,11 +74,11 @@ function buildIcs(booking) {
     "VERSION:2.0",
     "PRODID:-//Esthetique Basilix//Booking//FR",
     "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
     "BEGIN:VEVENT",
     `UID:${uid}`,
     `DTSTAMP:${utcStamp(moment())}`,
     `DTSTART:${localStamp(start)}`,
+    `DTEND:${localStamp(end)}`,
     `SUMMARY:${escapeIcs(summary)}`,
     `LOCATION:${escapeIcs(LOCATION)}`,
     `DESCRIPTION:${escapeIcs(description)}`,
@@ -98,13 +100,13 @@ function buildGoogleCalendarUrl(booking) {
   const { data, time, service } = booking;
   const start = startMoment(data, time);
   if (!start.isValid()) return null;
+  const end = start.clone().add(1, "hour");
 
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: `Rendez-vous Esthétique Basilix — ${service}`,
-    // fără durată impusă: început = sfârșit (doar ora programării).
-    // oră „floating" (fără Z) → Google o afișează ca 18h00 pe orice fus orar
-    dates: `${localStamp(start)}/${localStamp(start)}`,
+    // oră „floating" (fără Z) → Google afișează 18h00 pe orice fus orar
+    dates: `${localStamp(start)}/${localStamp(end)}`,
     details: `Service : ${service}\nHeure : ${time}. La durée varie selon le service.\nTél : ${CLINIC_PHONE}`,
     location: LOCATION,
   });
