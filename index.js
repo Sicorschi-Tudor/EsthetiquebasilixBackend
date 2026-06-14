@@ -115,7 +115,9 @@ app.get("/ics", (req, res) => {
     return res.status(400).send("Données de réservation invalides");
   }
   res.setHeader("Content-Type", "text/calendar; charset=utf-8");
-  res.setHeader("Content-Disposition", 'attachment; filename="rendez-vous.ics"');
+  // "inline" (nu "attachment") → iOS/Mac Safari deschid DIRECT Apple Calendar cu
+  // fereastra de adăugare, fără pasul intermediar de descărcare + deschidere a fișierului.
+  res.setHeader("Content-Disposition", 'inline; filename="rendez-vous.ics"');
   res.send(ics);
 });
 
