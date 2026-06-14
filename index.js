@@ -5,6 +5,7 @@ const routes = require("./routes/TaskRoute");
 const cors = require("cors");
 const cron = require("node-cron");
 const TaskModel = require("./Models/TaskModels");
+const { buildIcs } = require("./utils/calendar");
 const { checkNextDayRecord } = require("./controllers/TaskControllers");
 const {
   sendBookingConfirmation,
@@ -103,6 +104,19 @@ app.get("/sentemailpartener", (req, res) => {
       console.error("Error in /sentemailpartener:", error);
       res.status(500).send(error.message);
     });
+});
+
+// Servește fișierul .ics pentru o programare. Folosit de butonul „Ajouter au calendrier"
+// pe iOS/Mac: deschiderea acestui URL (Content-Type text/calendar) adaugă evenimentul
+// direct în Apple Calendar (calendarul lor nativ, nu Google).
+app.get("/ics", (req, res) => {
+  const ics = buildIcs(req.query);
+  if (!ics) {
+    return res.status(400).send("Données de réservation invalides");
+  }
+  res.setHeader("Content-Type", "text/calendar; charset=utf-8");
+  res.setHeader("Content-Disposition", 'attachment; filename="rendez-vous.ics"');
+  res.send(ics);
 });
 
 app.use("/tasks", routes);

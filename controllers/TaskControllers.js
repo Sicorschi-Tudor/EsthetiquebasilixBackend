@@ -1,7 +1,7 @@
 const TaskModel = require("../Models/TaskModels");
 const moment = require("moment-timezone");
 const { sendBookingConfirmation, sendBookingReminder } = require("../utils/emailService");
-const { buildIcs, buildGoogleCalendarUrl } = require("../utils/calendar");
+const { buildGoogleCalendarUrl, buildIcsUrl } = require("../utils/calendar");
 
 // Normalizează data la formatul canonic yyyy-MM-dd, indiferent ce trimite clientul.
 // Astfel aceeași zi reală produce mereu ACELAȘI string, deci indexul unic {data,time}
@@ -111,16 +111,17 @@ const saveTask = async (req, res) => {
       (err) => console.error("Booking confirmation email failed:", err)
     );
 
-    // Rezervarea e confirmată în DB — DOAR ACUM generăm fișierul de calendar (.ics)
-    // și linkul Google, și le returnăm pentru butonul „Ajouter à mon calendrier".
-    const ics = buildIcs({ data, email, name, service, surname, tel, time });
+    // Rezervarea e confirmată în DB — DOAR ACUM generăm linkurile de calendar:
+    //   googleCalendarUrl → pentru Android/Windows (Google Agenda)
+    //   icsUrl            → pentru iOS/Mac (deschide Apple Calendar prin /ics)
     const googleCalendarUrl = buildGoogleCalendarUrl({
       data, email, name, service, surname, tel, time,
     });
+    const icsUrl = buildIcsUrl({ data, email, name, service, surname, tel, time });
 
-    // Returnăm datele rezervării (+ calendar) fără un al doilea apel DB.
+    // Returnăm datele rezervării (+ linkuri calendar) fără un al doilea apel DB.
     res.status(201).json({
-      data, email, name, service, surname, tel, time, ics, googleCalendarUrl,
+      data, email, name, service, surname, tel, time, googleCalendarUrl, icsUrl,
     });
   } catch (error) {
     // Orice eroare MongoDB (timeout, validare, rețea, write concern, etc.)

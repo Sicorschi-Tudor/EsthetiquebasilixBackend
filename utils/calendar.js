@@ -3,6 +3,7 @@ const moment = require("moment-timezone");
 const TZ = "Europe/Brussels";
 const LOCATION = "Avenue Charles-Quint 420, 1082 Berchem-Sainte-Agathe, Bruxelles";
 const CLINIC_PHONE = "02 354 57 98";
+const BACKEND_BASE = "https://esthetiquebasilixbackend.onrender.com";
 
 // Normalizează data la yyyy-MM-dd (acceptă și dd-MM-yyyy)
 function normDate(d) {
@@ -28,9 +29,16 @@ function startMoment(data, time) {
   return moment.tz(`${dateStr} ${hh}:${mm}`, "YYYY-MM-DD HH:mm", TZ);
 }
 
-// Format UTC pentru iCalendar / Google: 20260613T100000Z
+// Format UTC (pentru DTSTAMP, care trebuie să fie în UTC): 20260613T100000Z
 function utcStamp(m) {
   return m.clone().utc().format("YYYYMMDDTHHmmss") + "Z";
+}
+
+// Format „floating" — ora locală a programării FĂRĂ fus orar (fără Z). Astfel ora
+// afișată e mereu cea rezervată (ex: 18h00 rămâne 18h00 pe orice telefon, indiferent
+// de fusul orar al dispozitivului clientului).
+function localStamp(m) {
+  return m.format("YYYYMMDDTHHmmss");
 }
 
 // Escape conform RFC 5545 pentru valorile text din .ics
@@ -68,7 +76,7 @@ function buildIcs(booking) {
     "BEGIN:VEVENT",
     `UID:${uid}`,
     `DTSTAMP:${utcStamp(moment())}`,
-    `DTSTART:${utcStamp(start)}`,
+    `DTSTART:${localStamp(start)}`,
     `SUMMARY:${escapeIcs(summary)}`,
     `LOCATION:${escapeIcs(LOCATION)}`,
     `DESCRIPTION:${escapeIcs(description)}`,
@@ -94,12 +102,29 @@ function buildGoogleCalendarUrl(booking) {
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: `Rendez-vous Esthétique Basilix — ${service}`,
-    // fără durată impusă: început = sfârșit (doar ora programării)
-    dates: `${utcStamp(start)}/${utcStamp(start)}`,
+    // fără durată impusă: început = sfârșit (doar ora programării).
+    // oră „floating" (fără Z) → Google o afișează ca 18h00 pe orice fus orar
+    dates: `${localStamp(start)}/${localStamp(start)}`,
     details: `Service : ${service}\nHeure : ${time}. La durée varie selon le service.\nTél : ${CLINIC_PHONE}`,
     location: LOCATION,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-module.exports = { buildIcs, buildGoogleCalendarUrl };
+// Construiește URL-ul către endpoint-ul backend care servește fișierul .ics cu
+// Content-Type text/calendar. Pe iOS/Mac, deschiderea acestui URL adaugă evenimentul
+// direct în Apple Calendar (spre deosebire de descărcarea unui blob, care nu merge pe iOS).
+function buildIcsUrl(booking) {
+  const { data, time, service, name, surname, email } = booking;
+  const params = new URLSearchParams({
+    data: String(data || ""),
+    time: String(time || ""),
+    service: String(service || ""),
+    name: String(name || ""),
+    surname: String(surname || ""),
+    email: String(email || ""),
+  });
+  return `${BACKEND_BASE}/ics?${params.toString()}`;
+}
+
+module.exports = { buildIcs, buildGoogleCalendarUrl, buildIcsUrl };
