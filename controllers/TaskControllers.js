@@ -18,6 +18,9 @@ const normalizeData = (data) => {
 
 const normalizeTime = (time) => (time == null ? time : String(time).trim());
 
+// Emailul administratorului: NU primește remindere automate cu o zi înainte.
+const ADMIN_EMAIL = "voicugeorgiana88@gmail.com";
+
 const getTasks = async (req, res) => {
   try {
     const tasks = await TaskModel.find();
@@ -143,6 +146,10 @@ const checkNextDayRecord = async () => {
     const nextDayStr = nextDay.format("DD-MM-YYYY");
 
     const records = tasks.filter((task) => {
+      // Excepție: emailul administratorului NU primește reminder.
+      if (String(task.email).trim().toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+        return false;
+      }
       const taskDate = task.data;
       // Suportă atât formatul dd-MM-yyyy cât și yyyy-MM-dd
       if (/^\d{2}-\d{2}-\d{4}$/.test(taskDate)) {
