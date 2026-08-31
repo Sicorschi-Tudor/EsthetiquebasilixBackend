@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 require("dotenv").config();
 const routes = require("./routes/TaskRoute");
+const priceRoutes = require("./routes/PriceRoute");
 const cors = require("cors");
 const cron = require("node-cron");
 const TaskModel = require("./Models/TaskModels");
@@ -122,3 +123,4 @@ app.get("/ics", (req, res) => {
 });
 
 app.use("/tasks", routes);
+app.use("/preturi", priceRoutes);
