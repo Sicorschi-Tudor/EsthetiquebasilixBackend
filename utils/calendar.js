@@ -55,15 +55,22 @@ function escapeIcs(str) {
 // SALVA evenimentul (fără DTEND, iOS îl afișează dar nu-l salvează). În descriere se
 // precizează că durata reală variază după serviciu.
 // Include o notificare cu 2 zile înainte de programare.
+// UID-ul evenimentului din calendarul clientei: derivat din dată + oră + email, deci
+// același la confirmare și la o anulare ulterioară (calendarul îl poate recunoaște).
+function icsUid({ data, time, email }) {
+  return (
+    `${normDate(data)}-${String(time)}-${String(email || "").replace(/[^a-zA-Z0-9]/g, "")}` +
+    "@esthetiquebasilix.be"
+  );
+}
+
 function buildIcs(booking) {
-  const { data, time, service, name, surname, email } = booking;
+  const { data, time, service, name, surname } = booking;
   const start = startMoment(data, time);
   if (!start.isValid()) return null;
   const end = start.clone().add(1, "hour");
 
-  const uid =
-    `${normDate(data)}-${String(time)}-${String(email || "").replace(/[^a-zA-Z0-9]/g, "")}` +
-    "@esthetiquebasilix.be";
+  const uid = icsUid(booking);
   const summary = `Rendez-vous Esthétique Basilix — ${service}`;
   const description =
     `Bonjour ${name || ""} ${surname || ""}. Votre rendez-vous : ${service}. ` +
@@ -92,6 +99,37 @@ function buildIcs(booking) {
     "END:VCALENDAR",
   ];
 
+  return lines.join("\r\n");
+}
+
+// Anulează în calendarul clientei evenimentul trimis la confirmare (același UID,
+// METHOD:CANCEL, STATUS:CANCELLED). Altfel evenimentul vechi — cu alarma lui cu 2 zile
+// înainte — rămâne în telefon chiar dacă programarea a fost anulată sau mutată.
+function buildCancelIcs(booking) {
+  const { data, time, service } = booking;
+  const start = startMoment(data, time);
+  if (!start.isValid()) return null;
+  const end = start.clone().add(1, "hour");
+
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Esthetique Basilix//Booking//FR",
+    "CALSCALE:GREGORIAN",
+    "METHOD:CANCEL",
+    "BEGIN:VEVENT",
+    `UID:${icsUid(booking)}`,
+    `DTSTAMP:${utcStamp(moment())}`,
+    `DTSTART:${localStamp(start)}`,
+    `DTEND:${localStamp(end)}`,
+    "SEQUENCE:1",
+    "STATUS:CANCELLED",
+    `SUMMARY:${escapeIcs(`ANNULÉ — Rendez-vous Esthétique Basilix — ${service}`)}`,
+    `LOCATION:${escapeIcs(LOCATION)}`,
+    `DESCRIPTION:${escapeIcs(`Ce rendez-vous (${time}) a été annulé. Tél : ${CLINIC_PHONE}`)}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ];
   return lines.join("\r\n");
 }
 
@@ -129,4 +167,4 @@ function buildIcsUrl(booking) {
   return `${BACKEND_BASE}/ics?${params.toString()}`;
 }
 
-module.exports = { buildIcs, buildGoogleCalendarUrl, buildIcsUrl };
+module.exports = { buildIcs, buildCancelIcs, icsUid, buildGoogleCalendarUrl, buildIcsUrl };
